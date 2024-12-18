@@ -70,7 +70,7 @@ def main():
 
             # print("images_shape: ", images.shape)
             print("masks_shape: ", masks.shape)
-            print("labels: ", np.unique(masks[0]))
+            print("labels: ", np.unique(masks[0].cpu().numpy()))
         
             optimizer.zero_grad()
         
