@@ -38,7 +38,7 @@ def main():
     #     loss_fn = nn.BCEWithLogitsLoss()
     #     activ_func = "Sigmoid"
     # else:
-    # criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss()
 
     # scaler = torch.GradScaler()
 
@@ -69,16 +69,16 @@ def main():
             masks = masks.to(device, dtype=torch.long).squeeze(1)
 
             # print("images_shape: ", images.shape)
-            print("masks_shape: ", masks.shape)
-            print("labels: ", np.unique(masks[0].cpu().numpy()))
+            # print("masks_shape: ", masks.shape)
+            # print("labels: ", np.unique(masks[0].cpu().numpy()))
         
             optimizer.zero_grad()
         
             with torch.amp.autocast("cuda"):
                 # Forward pass
                 preds = model(images)
-                #   loss = criterion(pred, masks)
-                loss = dice_loss(preds, masks)
+                loss = criterion(preds, masks)
+                # loss = dice_loss(preds, masks)
                 running_train_loss += loss.item()
         
             # dice = dice_score(pred , masks, n_classes)
@@ -104,8 +104,8 @@ def main():
                 masks = masks.to(device, dtype=torch.long)
 
                 preds = model(images)
-                # loss = criterion(pred, masks)
-                loss = dice_loss(preds, masks)
+                loss = criterion(preds, masks)
+                # loss = dice_loss(preds, masks)
                 running_val_loss += loss.item()
 
         val_loss = running_val_loss / len(val_loader)
