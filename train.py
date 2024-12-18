@@ -2,6 +2,7 @@ import os
 import argparse
 import torch.amp
 from tqdm import tqdm
+import numpy as np
 import matplotlib.pyplot as plt
 
 import torch
@@ -68,7 +69,8 @@ def main():
             masks = masks.to(device, dtype=torch.long).squeeze(1)
 
             # print("images_shape: ", images.shape)
-            # print("masks_shape: ", masks.shape)
+            print("masks_shape: ", masks.shape)
+            print("labels: ", np.unique(masks[0]))
         
             optimizer.zero_grad()
         
