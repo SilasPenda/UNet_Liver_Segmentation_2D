@@ -1,1 +1,1 @@
-# UNet_Liver_Segmentation_2D
+# Liver_Segmentation_3D
