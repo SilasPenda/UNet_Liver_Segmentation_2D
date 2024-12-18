@@ -29,7 +29,7 @@ module list
 cd /work/c-2iia/sp165339/UNet_Liver_Segmentation_2D
 
 ## run script
-python train.py --epochs 100
+python train.py --epochs 50
 
 
 ## printf "\n --- end of python execution ---\n\n"
