@@ -57,7 +57,7 @@ class UNet2D(nn.Module):
             x = self.ups[idx+1](concat_skip)
 
         out = self.final_conv(x)
-        out = self.activation(out)
+        # out = self.activation(out)
 
         return out
 
