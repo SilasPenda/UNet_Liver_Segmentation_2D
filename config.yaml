@@ -1,5 +1,5 @@
-train_dir: "/work/c-2iia/sp165339/Liver_Segmentation_3D/2D_Data/train"
-val_dir: "/work/c-2iia/sp165339/Liver_Segmentation_3D/2D_Data/val"
+train_dir: "/work/c-2iia/sp165339/UNet_Liver_Segmentation_2D/2D_Data/train"
+val_dir: "/work/c-2iia/sp165339/UNet_Liver_Segmentation_2D/2D_Data/val"
 
 # train_dir: "C:/Users/penda/Documents/Study Materials/Machine and Deep Learning/Project/2D_Data/training_data/train"
 # val_dir: "C:/Users/penda/Documents/Study Materials/Machine and Deep Learning/Project/2D_Data/training_data/val"
