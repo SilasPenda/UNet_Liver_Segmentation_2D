@@ -55,7 +55,7 @@ def main():
         load_checkpoint(torch.load(args.checkpoint), model)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-    best_loss = 0  # Initialize best validation Dice score
+    best_loss = float('inf') # Initialize best loss to very high val before training starts
 
 
     os.makedirs("models", exist_ok=True)
