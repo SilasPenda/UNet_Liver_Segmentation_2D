@@ -71,7 +71,7 @@ def main():
         running_train_loss = 0.0
         for images, masks in tqdm(train_loader, desc="Training"):
             images = images.to(device)
-            masks = masks.to(device, dtype=torch.long).squeeze(1)
+            masks = masks.to(device, dtype=torch.long)
 
             # print("images_shape: ", images.shape)
             # print("masks_shape: ", masks.shape)
@@ -82,7 +82,7 @@ def main():
             with torch.amp.autocast("cuda"):
                 # Forward pass
                 preds = model(images)
-                loss = loss_function(preds, masks.unsqueeze(1))
+                loss = loss_function(preds, masks)
                 # loss = criterion(preds, masks)
                 # loss = dice_loss(preds, masks)
                 running_train_loss += loss.item()
@@ -110,7 +110,7 @@ def main():
                 masks = masks.to(device, dtype=torch.long)
 
                 preds = model(images)
-                loss = loss_function(preds, masks.unsqueeze(1))
+                loss = loss_function(preds, masks)
                 # loss = criterion(preds, masks)
                 # loss = dice_loss(preds, masks)
                 running_val_loss += loss.item()
