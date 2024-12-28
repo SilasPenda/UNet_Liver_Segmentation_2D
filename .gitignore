@@ -7,6 +7,15 @@ models
 results
 tests.ipynb
 save.png
+3d_image.nii
+3D_new_image.nii
+Slices2
+Slices
+masks2
+pred
+pred2
+
+
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

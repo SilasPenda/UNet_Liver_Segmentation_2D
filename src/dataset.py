@@ -28,7 +28,7 @@ class LoadTransformDataset(Dataset):
         image_path = os.path.join(self.images_dir, self.images[idx])
         rgb_mask_path = os.path.join(self.labels_dir, self.labels[idx])
         
-        image = np.array(Image.open(image_path).convert("RGB"))
+        image = np.array(Image.open(image_path).convert("L"))
         mask = np.array(Image.open(rgb_mask_path).convert("L"))
 
         if self.transform:

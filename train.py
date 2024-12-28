@@ -13,6 +13,9 @@ from src.dataset import get_data_loaders
 from src.model import UNet2D
 from src.utils import get_config, dice_loss, save_checkpoint, load_checkpoint
 
+from monai.metrics import DiceMetric
+from monai.losses import DiceLoss
+
 def main():
     parser = argparse.ArgumentParser(description='Train a 2D U-Net Segmentation model.')
     parser.add_argument('-e', '--epochs', type=int, help='Number of Epochs', required=True)
@@ -39,6 +42,8 @@ def main():
     #     activ_func = "Sigmoid"
     # else:
     criterion = nn.CrossEntropyLoss()
+    loss_function = DiceLoss(to_onehot_y=True, softmax=True)
+    dice_metric = DiceMetric(include_background=False, reduction="mean")
 
     # scaler = torch.GradScaler()
 
@@ -56,7 +61,7 @@ def main():
     
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     best_loss = float('inf') # Initialize best loss to very high val before training starts
-
+    best_metric = 0
 
     os.makedirs("models", exist_ok=True)
 
@@ -77,7 +82,8 @@ def main():
             with torch.amp.autocast("cuda"):
                 # Forward pass
                 preds = model(images)
-                loss = criterion(preds, masks)
+                loss = loss_function(preds, masks)
+                # loss = criterion(preds, masks)
                 # loss = dice_loss(preds, masks)
                 running_train_loss += loss.item()
         
@@ -104,27 +110,40 @@ def main():
                 masks = masks.to(device, dtype=torch.long)
 
                 preds = model(images)
-                loss = criterion(preds, masks)
+                loss = loss_function(preds, masks)
+                # loss = criterion(preds, masks)
                 # loss = dice_loss(preds, masks)
                 running_val_loss += loss.item()
+                dice_metric(preds, masks)
 
         val_loss = running_val_loss / len(val_loader)
 
+        # aggregate the final mean dice result
+        metric = dice_metric.aggregate().item()
+        # reset the status for next validation round
+        dice_metric.reset()
+
         print(f"Epoch {epoch + 1}/{num_epochs} - "
             f"Train Loss: {train_loss:.2f}, - "
-            f"Val Loss: {val_loss:.2f}")
+            f"Val Loss: {val_loss:.2f}, - "
+            f"Val Dice: {metric:.2f}")
         
         # Save the latest model after each epoch
         checkpoint = {
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
+            "metric": metric
         }
         save_checkpoint(checkpoint, filename=last_model_path)
         
         # Save the best model
-        if val_loss < best_loss:
+        # if val_loss < best_loss:
+        #     save_checkpoint(checkpoint, filename=best_model_path)
+        #     best_loss = val_loss
+
+        if metric > best_metric:
             save_checkpoint(checkpoint, filename=best_model_path)
-            best_loss = val_loss
+            best_metric = metric
             # print(f'Best model updated at epoch {epoch + 1}')
 
 
@@ -136,17 +155,15 @@ def main():
         plt.title("Train Loss")
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
-        plt.axis("off")
 
         plt.subplot(2, 2, 2)
         plt.plot(val_loss)
         plt.title("Val Loss")
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
-        plt.axis("off")
 
         plt.tight_layout()
-        
+
         plt.savefig(loss_plot_path)
         plt.close()
 

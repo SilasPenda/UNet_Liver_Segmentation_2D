@@ -76,7 +76,7 @@ class UNet2D(nn.Module):
 
 
 def test():
-    input_channels = 3
+    input_channels = 1
     n_classes = 3
 
     x = torch.randn((1, input_channels, 161, 161)) # (batch_size, channels, height, width)
