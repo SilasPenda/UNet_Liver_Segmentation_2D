@@ -102,13 +102,13 @@ def get_data_loaders():
     train_dataset = LoadTransformDataset(train_images_dir, train_labels_dir)
     val_dataset = LoadTransformDataset(val_images_dir, val_labels_dir)
 
-    # batch_size = 8
-    # train_loader = DataLoader(train_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=True, pin_memory=True, num_workers=2)
-    # val_loader = DataLoader(val_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=False, pin_memory=True, num_workers=2)
+    batch_size = 8
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=True, pin_memory=True, num_workers=2)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=False, pin_memory=True, num_workers=2)
 
-    batch_size = 2
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=False)
+    # batch_size = 2
+    # train_loader = DataLoader(train_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=True)
+    # val_loader = DataLoader(val_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=False)
 
     return train_loader, val_loader
 
