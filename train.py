@@ -42,7 +42,7 @@ def main():
     #     activ_func = "Sigmoid"
     # else:
     criterion = nn.CrossEntropyLoss()
-    loss_function = DiceLoss(to_onehot_y=True, softmax=True)
+    loss_function = DiceLoss(softmax=True)
     dice_metric = DiceMetric(include_background=False, reduction="mean")
 
     # scaler = torch.GradScaler()
