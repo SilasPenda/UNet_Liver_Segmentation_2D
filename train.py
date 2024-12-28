@@ -42,7 +42,7 @@ def main():
     #     activ_func = "Sigmoid"
     # else:
     criterion = nn.CrossEntropyLoss()
-    loss_function = DiceLoss(softmax=True)
+    loss_function = DiceLoss(sigmoid=True)
     dice_metric = DiceMetric(include_background=False, reduction="mean")
 
     # scaler = torch.GradScaler()
@@ -70,7 +70,7 @@ def main():
         model.train()
         running_train_loss = 0.0
         for images, masks in tqdm(train_loader, desc="Training"):
-            images = images.to(device)
+            images = images.to(device).unsqueeze(1)
             masks = masks.to(device, dtype=torch.long).squeeze(1)
 
             # print("images_shape: ", images.shape)
