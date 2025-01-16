@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from PIL import Image
+import cv2
 import matplotlib.pyplot as plt
 
 import torch
@@ -27,9 +27,12 @@ class LoadTransformDataset(Dataset):
         # Get image and corresponding label paths
         image_path = os.path.join(self.images_dir, self.images[idx])
         rgb_mask_path = os.path.join(self.labels_dir, self.labels[idx])
-        
-        image = np.array(Image.open(image_path).convert("L"))
-        mask = np.array(Image.open(rgb_mask_path).convert("L"))
+    
+        image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        mask = cv2.imread(rgb_mask_path, cv2.IMREAD_GRAYSCALE)
+
+        image = cv2.resize(image, (128, 128))
+        mask = cv2.resize(mask, (128, 128))
 
         if self.transform:
             image = self.transform(image)
@@ -44,36 +47,36 @@ class LoadTransformDataset(Dataset):
         return image, mask
 
     
-def pad_tensor(tensor, max_height, max_width):
-    # Get the current shape of the tensor
-    if len(tensor.shape) == 3:
-        _, height, width = tensor.shape  # First dimension is the channel
-    else:
-        height, width = tensor.shape
+# def pad_tensor(tensor, max_height, max_width):
+#     # Get the current shape of the tensor
+#     if len(tensor.shape) == 3:
+#         _, height, width = tensor.shape  # First dimension is the channel
+#     else:
+#         height, width = tensor.shape
 
-    # Calculate the padding required
-    pad_height = max_height - height
-    pad_width = max_width - width
+#     # Calculate the padding required
+#     pad_height = max_height - height
+#     pad_width = max_width - width
 
-    # Pad the tensor (pad only height and width, not channels)
-    padded_tensor = F.pad(tensor, (0, pad_width, 0, pad_height))  # (left, right, top, bottom)
+#     # Pad the tensor (pad only height and width, not channels)
+#     padded_tensor = F.pad(tensor, (0, pad_width, 0, pad_height))  # (left, right, top, bottom)
     
-    return padded_tensor
+#     return padded_tensor
 
-def pad_collate_fn(batch):
-    # Get the maximum height and width for the batch
-    max_height = max([item[0].shape[-2] for item in batch])  # item[0] is the image
-    max_width = max([item[0].shape[-1] for item in batch])
+# def pad_collate_fn(batch):
+#     # Get the maximum height and width for the batch
+#     max_height = max([item[0].shape[-2] for item in batch])  # item[0] is the image
+#     max_width = max([item[0].shape[-1] for item in batch])
 
-    # Apply padding to each image and label
-    padded_images = [pad_tensor(img, max_height, max_width) for img, _ in batch]
-    padded_masks = [pad_tensor(mask, max_height, max_width) for _, mask in batch]
+#     # Apply padding to each image and label
+#     padded_images = [pad_tensor(img, max_height, max_width) for img, _ in batch]
+#     padded_masks = [pad_tensor(mask, max_height, max_width) for _, mask in batch]
 
-    # Stack the images and labels into batches
-    batch_images = torch.stack(padded_images)
-    batch_masks = torch.stack(padded_masks)
+#     # Stack the images and labels into batches
+#     batch_images = torch.stack(padded_images)
+#     batch_masks = torch.stack(padded_masks)
 
-    return batch_images, batch_masks
+#     return batch_images, batch_masks
 
 
 
@@ -103,8 +106,8 @@ def get_data_loaders():
     val_dataset = LoadTransformDataset(val_images_dir, val_labels_dir)
 
     batch_size = 8
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=True, pin_memory=True, num_workers=2)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=False, pin_memory=True, num_workers=2)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=2)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=2)
 
     # batch_size = 2
     # train_loader = DataLoader(train_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=True)
@@ -139,5 +142,5 @@ if __name__ == "__main__":
 
         # Save the figure
         plt.savefig("save.png")
-
+        # plt.show
         break
