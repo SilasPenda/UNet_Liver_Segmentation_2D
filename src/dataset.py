@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import  torchvision.transforms.functional as TF
 from torchvision import transforms
 
-from utils import get_config
+from src.utils import get_config
 
 
 class LoadTransformDataset(Dataset):
