@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import  torchvision.transforms.functional as TF
 from torchvision import transforms
 
-from src.utils import get_config
+from utils import get_config
 
 
 class LoadTransformDataset(Dataset):
@@ -28,11 +28,15 @@ class LoadTransformDataset(Dataset):
         image_path = os.path.join(self.images_dir, self.images[idx])
         rgb_mask_path = os.path.join(self.labels_dir, self.labels[idx])
     
-        image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+        image = cv2.imread(image_path)
         mask = cv2.imread(rgb_mask_path, cv2.IMREAD_GRAYSCALE)
 
-        image = cv2.resize(image, (128, 128))
-        mask = cv2.resize(mask, (128, 128))
+        # image = cv2.resize(image, (128, 128))
+        # mask = cv2.resize(mask, (128, 128))
+
+        mask[mask <= 0.5] = 0  # Mask intensities
+        mask[(mask > 0.5) & (mask <= 1.5)] = 1
+        mask[mask > 1.5] = 2
 
         if self.transform:
             image = self.transform(image)
@@ -47,36 +51,36 @@ class LoadTransformDataset(Dataset):
         return image, mask
 
     
-# def pad_tensor(tensor, max_height, max_width):
-#     # Get the current shape of the tensor
-#     if len(tensor.shape) == 3:
-#         _, height, width = tensor.shape  # First dimension is the channel
-#     else:
-#         height, width = tensor.shape
+def pad_tensor(tensor, max_height, max_width):
+    # Get the current shape of the tensor
+    if len(tensor.shape) == 3:
+        _, height, width = tensor.shape  # First dimension is the channel
+    else:
+        height, width = tensor.shape
 
-#     # Calculate the padding required
-#     pad_height = max_height - height
-#     pad_width = max_width - width
+    # Calculate the padding required
+    pad_height = max_height - height
+    pad_width = max_width - width
 
-#     # Pad the tensor (pad only height and width, not channels)
-#     padded_tensor = F.pad(tensor, (0, pad_width, 0, pad_height))  # (left, right, top, bottom)
+    # Pad the tensor (pad only height and width, not channels)
+    padded_tensor = F.pad(tensor, (0, pad_width, 0, pad_height))  # (left, right, top, bottom)
     
-#     return padded_tensor
+    return padded_tensor
 
-# def pad_collate_fn(batch):
-#     # Get the maximum height and width for the batch
-#     max_height = max([item[0].shape[-2] for item in batch])  # item[0] is the image
-#     max_width = max([item[0].shape[-1] for item in batch])
+def pad_collate_fn(batch):
+    # Get the maximum height and width for the batch
+    max_height = max([item[0].shape[-2] for item in batch])  # item[0] is the image
+    max_width = max([item[0].shape[-1] for item in batch])
 
-#     # Apply padding to each image and label
-#     padded_images = [pad_tensor(img, max_height, max_width) for img, _ in batch]
-#     padded_masks = [pad_tensor(mask, max_height, max_width) for _, mask in batch]
+    # Apply padding to each image and label
+    padded_images = [pad_tensor(img, max_height, max_width) for img, _ in batch]
+    padded_masks = [pad_tensor(mask, max_height, max_width) for _, mask in batch]
 
-#     # Stack the images and labels into batches
-#     batch_images = torch.stack(padded_images)
-#     batch_masks = torch.stack(padded_masks)
+    # Stack the images and labels into batches
+    batch_images = torch.stack(padded_images)
+    batch_masks = torch.stack(padded_masks)
 
-#     return batch_images, batch_masks
+    return batch_images, batch_masks
 
 
 
@@ -106,8 +110,8 @@ def get_data_loaders():
     val_dataset = LoadTransformDataset(val_images_dir, val_labels_dir)
 
     batch_size = 8
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, pin_memory=True, num_workers=2)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=2)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=True, pin_memory=True, num_workers=2)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=False, pin_memory=True, num_workers=2)
 
     # batch_size = 2
     # train_loader = DataLoader(train_dataset, batch_size=batch_size, collate_fn=pad_collate_fn, shuffle=True)
@@ -120,7 +124,7 @@ def get_data_loaders():
 if __name__ == "__main__":
     train_loader, val_loader = get_data_loaders()
 
-    for images, labels in train_loader:
+    for images, labels in val_loader:
         # Process the first image
         print(images.shape)
         image = images[0].cpu().permute(1, 2, 0).numpy()  # Convert to HWC format

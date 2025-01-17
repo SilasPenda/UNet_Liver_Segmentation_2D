@@ -16,6 +16,9 @@ Slices
 masks2
 pred
 pred2
+src/dataset2.py
+targets
+image_slices
 
 
 
