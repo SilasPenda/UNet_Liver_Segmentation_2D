@@ -19,6 +19,8 @@ pred2
 src/dataset2.py
 targets
 image_slices
+inference
+best.pth
 
 
 
